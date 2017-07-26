@@ -13,13 +13,12 @@
 ##### Build defaults #####
 LUA_VERSION =       5.3
 TARGET =            cjson.so
-PREFIX =            lib
+PREFIX =            tests
 #CFLAGS =            -g -Wall -pedantic -fno-inline
 CFLAGS =            -O3 -Wall -pedantic -DNDEBUG
 CJSON_CFLAGS =      -fpic
-CJSON_LDFLAGS =     -shared
+CJSON_LDFLAGS =     -shared 
 LUA_INCLUDE_DIR =   ../skynet/3rd/lua
-LUA_BIN_DIR =       $(PREFIX)
 
 ##### Platform overrides #####
 ##
@@ -108,8 +107,6 @@ install: $(TARGET)
 	chmod $(EXECPERM) $(PREFIX)/lua2json.lua
 	cp lua/json2lua.lua $(PREFIX)/
 	chmod $(EXECPERM) $(PREFIX)/json2lua.lua
-	cd tests; cp $(TEST_FILES) ../$(PREFIX)
-	cd tests; chmod $(DATAPERM) $(TEST_FILES); chmod $(EXECPERM) *.lua *.pl
 
 clean:
-	rm -rf *.o $(TARGET) $(PREFIX)
+	rm -rf *.o $(TARGET) 

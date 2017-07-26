@@ -1238,6 +1238,7 @@ static void json_process_value(lua_State *l, json_parse_t *json,
 {
     switch (token->type) {
     case T_STRING:
+        printf("stirng  [%s]",token->value.string);
         lua_pushlstring(l, token->value.string, token->string_len);
         break;;
     case T_NUMBER:
