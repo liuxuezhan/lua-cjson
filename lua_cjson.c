@@ -1167,7 +1167,20 @@ static void json_parse_object_context(lua_State *l, json_parse_t *json)
             json_throw_parse_error(l, json, "object key string", &token);
 
         /* Push key */
-        lua_pushlstring(l, token.value.string, token.string_len);
+        if(json->cfg->encode_sparse_convert) {
+            char *p = "";
+            int id = strtol(token.value.string, &p, 10);
+            printf("key[%s]\n",token.value.string);
+            if ( strcmp(p,"")==0 ) { 
+            printf("key1[%s]\n",token.value.string);
+                lua_pushinteger(l, id);
+            }else{ 
+            printf("key2[%s]\n",token.value.string);
+                lua_pushlstring(l, token.value.string, token.string_len); 
+            printf("key3[%s]\n",token.value.string);
+            }
+        }
+        else{ lua_pushlstring(l, token.value.string, token.string_len); }
 
         json_next_token(json, &token);
         if (token.type != T_COLON)
@@ -1238,14 +1251,11 @@ static void json_process_value(lua_State *l, json_parse_t *json,
 {
     switch (token->type) {
     case T_STRING:
-        printf("stirng  [%s]",token->value.string);
-        lua_pushlstring(l, token->value.string, token->string_len);
         break;;
     case T_NUMBER:
         lua_pushnumber(l, token->value.number);
         break;;
     case T_BOOLEAN:
-        lua_pushboolean(l, token->value.boolean);
         break;;
     case T_OBJ_BEGIN:
         json_parse_object_context(l, json);

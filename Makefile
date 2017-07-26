@@ -12,8 +12,8 @@
 
 ##### Build defaults #####
 LUA_VERSION =       5.3
-TARGET =            cjson.so
 PREFIX =            tests
+TARGET =            $(PREFIX)/cjson.so
 #CFLAGS =            -g -Wall -pedantic -fno-inline
 CFLAGS =            -O3 -Wall -pedantic -DNDEBUG
 CJSON_CFLAGS =      -fpic
@@ -98,15 +98,9 @@ $(TARGET): $(OBJS)
 
 install: $(TARGET)
 	mkdir -p $(PREFIX)/cjson
-	cp $(TARGET) $(PREFIX)
 	cp $(TARGET) ../lib 
-	chmod $(EXECPERM) $(PREFIX)/$(TARGET)
+	chmod $(EXECPERM) $(TARGET)
 	cp lua/cjson/util.lua $(PREFIX)/cjson
 	chmod $(DATAPERM) $(PREFIX)/cjson/util.lua
-	cp lua/lua2json.lua $(PREFIX)/
-	chmod $(EXECPERM) $(PREFIX)/lua2json.lua
-	cp lua/json2lua.lua $(PREFIX)/
-	chmod $(EXECPERM) $(PREFIX)/json2lua.lua
-
 clean:
-	rm -rf *.o $(TARGET) 
+	rm -rf *.o $(TARGET)   

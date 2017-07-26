@@ -14,7 +14,12 @@ local env = {
     null = json.null
 }
 
-local t = util.run_script("data = " .. util.file_load(arg[1]), env)
-print(json.encode(t.data))
+json.encode_sparse_array(true,1,0)  
+local d = {[10]=10}
+print(util.serialise_value(d))
+d = json.encode(d)
+print(d)
+d = json.decode(d)
+print(util.serialise_value(d))
 
 -- vi:ai et sw=4 ts=4:
