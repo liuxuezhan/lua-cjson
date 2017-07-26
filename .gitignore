@@ -3,5 +3,6 @@
 *.so
 notes
 packages
+lib
 tags
 tests/utf8.dat
