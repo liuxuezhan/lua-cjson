@@ -1178,7 +1178,17 @@ static void json_parse_object_context(lua_State *l, json_parse_t *json)
             json_throw_parse_error(l, json, "object key string", &token);
 
         /* Push key */
-        lua_pushlstring(l, token.value.string, token.string_len);
+        if(json->cfg->encode_sparse_convert) {
+            char *p = "";
+            int id = strtol(token.value.string, &p, 10);
+            if ( strcmp(p,"")==0 ) { 
+                lua_pushinteger(l, id);
+            }else{ 
+                lua_pushlstring(l, token.value.string, token.string_len); 
+            }
+        }
+        else{ lua_pushlstring(l, token.value.string, token.string_len); }
+
 
         json_next_token(json, &token);
         if (token.type != T_COLON)
