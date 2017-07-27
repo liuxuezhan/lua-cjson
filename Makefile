@@ -18,7 +18,6 @@ TARGET =            $(PREFIX)/cjson.so
 CFLAGS =            -O3 -Wall -pedantic -DNDEBUG
 CJSON_CFLAGS =      -fpic
 CJSON_LDFLAGS =     -shared 
-LUA_INCLUDE_DIR =   /usr/local/include
 
 ##### Platform overrides #####
 ##
@@ -29,8 +28,9 @@ LUA_INCLUDE_DIR =   /usr/local/include
 
 ## Linux
 
-## FreeBSD
-#LUA_INCLUDE_DIR =   $(PREFIX)/include/lua51
+## centos
+LUA_INCLUDE_DIR =   /usr/local/include
+
 
 ## MacOSX (Macports)
 #PREFIX =            /opt/local
@@ -102,5 +102,6 @@ install: $(TARGET)
 	chmod $(EXECPERM) $(TARGET)
 	cp lua/cjson/util.lua $(PREFIX)/cjson
 	chmod $(DATAPERM) $(PREFIX)/cjson/util.lua
+
 clean:
 	rm -rf *.o $(TARGET)   
