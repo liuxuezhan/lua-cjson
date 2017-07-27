@@ -15,7 +15,8 @@ local env = {
 }
 
 json.encode_sparse_array(true,1,0)  
-local d = {[10]=10}
+local d = {a=1,[10]=10}
+d = {1,d,[10]=10}
 print(util.serialise_value(d))
 d = json.encode(d)
 print(d)

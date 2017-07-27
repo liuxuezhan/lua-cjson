@@ -1170,14 +1170,10 @@ static void json_parse_object_context(lua_State *l, json_parse_t *json)
         if(json->cfg->encode_sparse_convert) {
             char *p = "";
             int id = strtol(token.value.string, &p, 10);
-            printf("key[%s]\n",token.value.string);
             if ( strcmp(p,"")==0 ) { 
-            printf("key1[%s]\n",token.value.string);
                 lua_pushinteger(l, id);
             }else{ 
-            printf("key2[%s]\n",token.value.string);
                 lua_pushlstring(l, token.value.string, token.string_len); 
-            printf("key3[%s]\n",token.value.string);
             }
         }
         else{ lua_pushlstring(l, token.value.string, token.string_len); }

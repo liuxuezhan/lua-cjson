@@ -18,7 +18,7 @@ TARGET =            $(PREFIX)/cjson.so
 CFLAGS =            -O3 -Wall -pedantic -DNDEBUG
 CJSON_CFLAGS =      -fpic
 CJSON_LDFLAGS =     -shared 
-LUA_INCLUDE_DIR =   ../skynet/3rd/lua
+LUA_INCLUDE_DIR =   /usr/local/include
 
 ##### Platform overrides #####
 ##
