@@ -1305,7 +1305,6 @@ static int json_decode(lua_State *l)
      * CJSON can support any simple data type, hence only the first
      * character is guaranteed to be ASCII (at worst: '"'). This is
      * still enough to detect whether the wrong encoding is in use. */
-    printf("-->%s",json.data);
     if (json_len >= 2 && (!json.data[0] || !json.data[1]))
         luaL_error(l, "JSON parser does not support UTF-16 or UTF-32");
 
