@@ -28,8 +28,8 @@ CJSON_LDFLAGS =     -shared
 
 ## Linux
 
-## centos
-LUA =   /usr/local/include
+#LUA =   /usr/local/include
+LUA =    ../skynet/3rd/lua 
 OBJS =              lua_cjson.o strbuf.o $(FPCONV_OBJS)
 
 ## MacOSX (Macports)
