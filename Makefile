@@ -29,13 +29,8 @@ CJSON_LDFLAGS =     -shared
 ## Linux
 
 ## centos
-ifeq ($(LUA), skynet)
-	OBJS =              lua_cjson_skynet.o strbuf.o $(FPCONV_OBJS)
-	LUA_INCLUDE_DIR =   ../skynet/3rd/lua 
-else
-	LUA_INCLUDE_DIR =   /usr/local/include
-	OBJS =              lua_cjson.o strbuf.o $(FPCONV_OBJS)
-endif
+LUA =   /usr/local/include
+OBJS =              lua_cjson.o strbuf.o $(FPCONV_OBJS)
 
 ## MacOSX (Macports)
 #PREFIX =            /opt/local
@@ -81,7 +76,7 @@ EXECPERM =          755
 
 ASCIIDOC =          asciidoc
 
-BUILD_CFLAGS =      -I$(LUA_INCLUDE_DIR) $(CJSON_CFLAGS)
+BUILD_CFLAGS =      -I$(LUA) $(CJSON_CFLAGS)
 
 .PHONY: all clean install install-extra doc
 

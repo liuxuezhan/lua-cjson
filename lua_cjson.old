@@ -54,6 +54,12 @@
 #define CJSON_VERSION   "2.1devel"
 #endif
 
+#ifdef _MSC_VER
+#define CJSON_EXPORT    __declspec(dllexport)
+#else
+#define CJSON_EXPORT    extern
+#endif
+
 /* Workaround for Solaris platforms missing isinf() */
 #if !defined(isinf) && (defined(USE_INTERNAL_ISINF) || defined(MISSING_ISINF))
 #define isinf(x) (!isnan(x) && isnan((x) - (x)))
@@ -81,7 +87,6 @@ typedef enum {
     T_ARR_END,
     T_STRING,
     T_NUMBER,
-    T_INTEGER,
     T_BOOLEAN,
     T_NULL,
     T_COLON,
@@ -99,7 +104,6 @@ static const char *json_token_type_name[] = {
     "T_ARR_END",
     "T_STRING",
     "T_NUMBER",
-    "T_INTEGER",
     "T_BOOLEAN",
     "T_NULL",
     "T_COLON",
@@ -145,7 +149,6 @@ typedef struct {
     union {
         const char *string;
         double number;
-        lua_Integer integer;
         int boolean;
     } value;
     int string_len;
@@ -196,7 +199,7 @@ static json_config_t *json_fetch_config(lua_State *l)
 {
     json_config_t *cfg;
 
-    cfg = lua_touserdata(l, lua_upvalueindex(1));
+    cfg = (json_config_t *)lua_touserdata(l, lua_upvalueindex(1));
     if (!cfg)
         luaL_error(l, "BUG: Unable to fetch CJSON configuration");
 
@@ -363,7 +366,7 @@ static int json_destroy_config(lua_State *l)
 {
     json_config_t *cfg;
 
-    cfg = lua_touserdata(l, 1);
+    cfg = (json_config_t *)lua_touserdata(l, 1);
     if (cfg)
         strbuf_free(&cfg->encode_buf);
     cfg = NULL;
@@ -376,7 +379,7 @@ static void json_create_config(lua_State *l)
     json_config_t *cfg;
     int i;
 
-    cfg = lua_newuserdata(l, sizeof(*cfg));
+    cfg = (json_config_t *)lua_newuserdata(l, sizeof(*cfg));
 
     /* Create GC method to clean up strbuf */
     lua_newtable(l);
@@ -464,9 +467,9 @@ static void json_encode_exception(lua_State *l, json_config_t *cfg, strbuf_t *js
 static void json_append_string(lua_State *l, strbuf_t *json, int lindex)
 {
     const char *escstr;
-    int i;
     const char *str;
     size_t len;
+    size_t i;
 
     str = lua_tolstring(l, lindex, &len);
 
@@ -589,18 +592,8 @@ static void json_append_array(lua_State *l, json_config_t *cfg, int current_dept
 static void json_append_number(lua_State *l, json_config_t *cfg,
                                strbuf_t *json, int lindex)
 {
-    int len;
-#if LUA_VERSION_NUM >= 503
-    if (lua_isinteger(l, lindex)) {
-        lua_Integer num = lua_tointeger(l, lindex);
-
-        strbuf_ensure_empty_length(json, FPCONV_G_FMT_BUFSIZE); /* max length of int64 is 19 */
-        len = sprintf(strbuf_empty_ptr(json), LUA_INTEGER_FMT, num);
-        strbuf_extend_length(json, len);
-        return;
-    }
-#endif
     double num = lua_tonumber(l, lindex);
+    int len;
 
     if (cfg->encode_invalid_numbers == 0) {
         /* Prevent encoding invalid numbers */
@@ -1015,18 +1008,13 @@ static int json_is_invalid_number(json_parse_t *json)
 static void json_next_number_token(json_parse_t *json, json_token_t *token)
 {
     char *endptr;
-    token->value.integer = strtoll(json->ptr, &endptr, 0);
-    if (json->ptr == endptr) {
+
+    token->type = T_NUMBER;
+    token->value.number = fpconv_strtod(json->ptr, &endptr);
+    if (json->ptr == endptr)
         json_set_token_error(token, json, "invalid number");
-        return;
-    }
-    if (*endptr == '.' || *endptr == 'e' || *endptr == 'E') {
-        token->type = T_NUMBER;
-        token->value.number = fpconv_strtod(json->ptr, &endptr);
-    } else {
-        token->type = T_INTEGER;
-    }
-    json->ptr = endptr;     /* Skip the processed number */
+    else
+        json->ptr = endptr;     /* Skip the processed number */
 
     return;
 }
@@ -1179,17 +1167,7 @@ static void json_parse_object_context(lua_State *l, json_parse_t *json)
             json_throw_parse_error(l, json, "object key string", &token);
 
         /* Push key */
-        if(json->cfg->encode_sparse_convert) {
-            char *p = "";
-            int id = strtol(token.value.string, &p, 10);
-            if ( strcmp(p,"")==0 ) { 
-                lua_pushinteger(l, id);
-            }else{ 
-                lua_pushlstring(l, token.value.string, token.string_len); 
-            }
-        }
-        else{ lua_pushlstring(l, token.value.string, token.string_len); }
-
+        lua_pushlstring(l, token.value.string, token.string_len);
 
         json_next_token(json, &token);
         if (token.type != T_COLON)
@@ -1265,9 +1243,6 @@ static void json_process_value(lua_State *l, json_parse_t *json,
     case T_NUMBER:
         lua_pushnumber(l, token->value.number);
         break;;
-    case T_INTEGER:
-        lua_pushinteger(l, token->value.integer);
-        break;;
     case T_BOOLEAN:
         lua_pushboolean(l, token->value.boolean);
         break;;
@@ -1305,7 +1280,6 @@ static int json_decode(lua_State *l)
      * CJSON can support any simple data type, hence only the first
      * character is guaranteed to be ASCII (at worst: '"'). This is
      * still enough to detect whether the wrong encoding is in use. */
-    printf("-->%s",json.data);
     if (json_len >= 2 && (!json.data[0] || !json.data[1]))
         luaL_error(l, "JSON parser does not support UTF-16 or UTF-32");
 
@@ -1439,7 +1413,7 @@ static int lua_cjson_safe_new(lua_State *l)
     return 1;
 }
 
-int luaopen_cjson(lua_State *l)
+CJSON_EXPORT int luaopen_cjson(lua_State *l)
 {
     lua_cjson_new(l);
 
@@ -1453,7 +1427,7 @@ int luaopen_cjson(lua_State *l)
     return 1;
 }
 
-int luaopen_cjson_safe(lua_State *l)
+CJSON_EXPORT int luaopen_cjson_safe(lua_State *l)
 {
     lua_cjson_safe_new(l);
 
