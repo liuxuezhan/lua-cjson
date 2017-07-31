@@ -15,7 +15,7 @@ LUA_VERSION =       5.3
 PREFIX =            tests
 TARGET =            $(PREFIX)/cjson.so
 #CFLAGS =            -g -Wall -pedantic -fno-inline
-CFLAGS =            -O3 -Wall -pedantic -DNDEBUG
+CFLAGS =            -O3 -Wall -pedantic -DNDEBUG 
 CJSON_CFLAGS =      -fpic
 CJSON_LDFLAGS =     -shared 
 
@@ -29,12 +29,13 @@ CJSON_LDFLAGS =     -shared
 ## Linux
 
 ## centos
-# LUA_INCLUDE_DIR =   /usr/local/include
-# OBJS =              lua_cjson.o strbuf.o $(FPCONV_OBJS)
-
-## skynet
-LUA_INCLUDE_DIR =   ../skynet/3rd/lua 
-OBJS =              lua_cjson_skynet.o strbuf.o $(FPCONV_OBJS)
+ifeq ($(LUA), skynet)
+	OBJS =              lua_cjson_skynet.o strbuf.o $(FPCONV_OBJS)
+	LUA_INCLUDE_DIR =   ../skynet/3rd/lua 
+else
+	LUA_INCLUDE_DIR =   /usr/local/include
+	OBJS =              lua_cjson.o strbuf.o $(FPCONV_OBJS)
+endif
 
 ## MacOSX (Macports)
 #PREFIX =            /opt/local
@@ -107,4 +108,4 @@ install: $(TARGET)
 	chmod $(DATAPERM) $(PREFIX)/cjson/util.lua
 
 clean:
-	rm -rf *.o $(TARGET)   
+	rm -rf *.o $(TARGET) ../lib/cjson.so  
